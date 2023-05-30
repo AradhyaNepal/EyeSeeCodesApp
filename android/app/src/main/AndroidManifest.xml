@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.eye_see_codes">
+    <uses-permission android:name="android.permission.VIBRATE" />
    <application
         android:label="Eye See Codes"
         android:name="${applicationName}"
