@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:logger/logger.dart';
+import 'package:vibration/vibration.dart';
 import 'package:workmanager/workmanager.dart';
 
 @pragma('vm:entry-point')
@@ -27,14 +30,16 @@ void callbackDispatcher() {
               enableVibration: true,
               colorized: true,
               ticker: 'ticker');
-      Timer.periodic(const Duration(seconds: 5), (timer) async {
-        const NotificationDetails notificationDetails =
-            NotificationDetails(android: androidNotificationDetails);
-        await flutterLocalNotificationsPlugin.show(
-            timer.tick, 'plain title', 'plain body', notificationDetails,
-            payload: 'item x');
-      });
+      const NotificationDetails notificationDetails =
+      NotificationDetails(android: androidNotificationDetails);
+      Logger().i("In Loop");
+      Vibration.vibrate(duration: 1000);
+      AudioPlayer()..play(AssetSource('audio/blink_time.mp3'))..resume();
+      await flutterLocalNotificationsPlugin.show(
+          Random().nextInt(1000), 'plain title', 'plain body', notificationDetails,
+          payload: 'item x');
     } catch (err) {
+      Logger().e("Was here"); // Logger flutter package, prints error on the debug console
       Logger().e(err
           .toString()); // Logger flutter package, prints error on the debug console
       throw Exception(err);

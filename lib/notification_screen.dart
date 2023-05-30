@@ -54,11 +54,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           isInDebugMode:
                               true // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
                           );
-                      await Workmanager().registerOneOffTask(
-                        "send_notification",
-                        "simpleTask",
-                      );
+
+                      const totalDuration=Duration(hours: 4);
+                      const interval=Duration(minutes: 10);
+                      for (Duration duration=Duration.zero;duration.inMilliseconds<=totalDuration.inMilliseconds;duration=Duration(milliseconds: duration.inMilliseconds+interval.inMilliseconds)){
+                        Workmanager().registerOneOffTask(
+                          "send_notification${duration.inMilliseconds}",
+                          "simpleTask",
+                          initialDelay: duration,
+                        );
+                      }
                     }
+                    isLoading=false;
                     isStarted=!isStarted;
                     await sharedPref.setBool(value, isStarted);
                     setState(() {});
