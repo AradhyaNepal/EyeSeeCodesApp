@@ -45,9 +45,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ticker: 'ticker');
                   const NotificationDetails notificationDetails =
                   NotificationDetails(android: androidNotificationDetails);
-                  timer=Timer.periodic(const Duration(minutes: 5), (timer) async{
+                  timer=Timer.periodic(const Duration(seconds: 10), (timer) async{
                     await flutterLocalNotificationsPlugin.show(
-                        0, 'plain title', 'plain body', notificationDetails,
+                        timer.tick, 'plain title', 'plain body', notificationDetails,
                         payload: 'item x');
                   });
                 }
