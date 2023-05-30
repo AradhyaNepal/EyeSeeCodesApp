@@ -16,6 +16,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
   bool isLoading = true;
   String value = "value";
 
+  bool isTestMode = false;
+
   @override
   void initState() {
     super.initState();
@@ -38,43 +40,77 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ? const Center(
               child: CircularProgressIndicator(),
             )
-          : Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: () async {
-                    isLoading = true;
-                    setState(() {});
-                    final sharedPref = await SharedPreferences.getInstance();
-                    if (isStarted) {
-                      await Workmanager().cancelAll();
-                    } else {
-                      await Workmanager().initialize(callbackDispatcher,
-                          isInDebugMode:
-                              true // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
+          : SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      isLoading = true;
+                      setState(() {});
+                      final sharedPref = await SharedPreferences.getInstance();
+                      if (isStarted) {
+                        await Workmanager().cancelAll();
+                      } else {
+                        await Workmanager().initialize(callbackDispatcher);
+                        if (isTestMode) {
+                          _testModeSetup();
+                        } else {
+                          Workmanager().registerPeriodicTask(
+                            "simpleTask",
+                            "Title",
+                            frequency: const Duration(minutes: 15),
+                            existingWorkPolicy: ExistingWorkPolicy.keep,
                           );
-
-                      const totalDuration=Duration(hours: 4);
-                      const interval=Duration(minutes: 10);
-                      for (Duration duration=Duration.zero;duration.inMilliseconds<=totalDuration.inMilliseconds;duration=Duration(milliseconds: duration.inMilliseconds+interval.inMilliseconds)){
-                        Workmanager().registerOneOffTask(
-                          "send_notification${duration.inMilliseconds}",
-                          "simpleTask",
-                          initialDelay: duration,
-                        );
+                        }
                       }
-                    }
-                    isLoading=false;
-                    isStarted=!isStarted;
-                    await sharedPref.setBool(value, isStarted);
-                    setState(() {});
-                  },
-                  child: Text(isStarted?"Stop":"Start"),
-                ),
-              ],
+                      isLoading = false;
+                      isStarted = !isStarted;
+                      await sharedPref.setBool(value, isStarted);
+                      setState(() {});
+                    },
+                    child: Text(isStarted ? "Stop" : "Start"),
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Test Mode"),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Switch(
+                          value: isTestMode,
+                          onChanged: (value) {
+                            setState(() {
+                              isTestMode = value;
+                            });
+                          }),
+                    ],
+                  )
+                ],
+              ),
             ),
     );
+  }
+
+  void _testModeSetup() {
+    const totalDuration = Duration(minutes: 1);
+    const interval = Duration(seconds: 10);
+    for (Duration duration = Duration.zero;
+        duration.inMilliseconds <= totalDuration.inMilliseconds;
+        duration = Duration(
+            milliseconds: duration.inMilliseconds + interval.inMilliseconds)) {
+      Workmanager().registerOneOffTask(
+        "send_notification${duration.inMilliseconds}",
+        "simpleTask",
+        initialDelay: duration,
+      );
+    }
   }
 
   @override
@@ -82,4 +118,3 @@ class _NotificationScreenState extends State<NotificationScreen> {
     super.dispose();
   }
 }
-
