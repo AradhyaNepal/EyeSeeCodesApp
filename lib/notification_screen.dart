@@ -58,10 +58,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           _testModeSetup();
                         } else {
                           await LocalStorage().resetShortRest();
-                          // final int helloAlarmID = 0;
-                          // await AndroidAlarmManager.periodic(const Duration(minutes: 1), helloAlarmID, printHello);
                           AndroidAlarmManager.periodic(
-                            const Duration(minutes: 15),
+                            const Duration(minutes: 10),
                             id,
                               callbackDispatcher,
 
