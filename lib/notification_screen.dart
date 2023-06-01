@@ -1,5 +1,6 @@
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:eye_see_codes/local_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
 import 'notification_work_manager.dart';
@@ -14,7 +15,6 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   bool isStarted = false;
   bool isLoading = true;
-  String value = "value";
 
   bool isTestMode = false;
 
@@ -25,7 +25,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   void initialize() async {
-    isStarted = (await SharedPreferences.getInstance()).getBool(value) ?? false;
+    isStarted = LocalStorage().isSubscribedForNotification;
     isLoading = false;
     setState(() {});
   }
@@ -50,7 +50,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     onPressed: () async {
                       isLoading = true;
                       setState(() {});
-                      final sharedPref = await SharedPreferences.getInstance();
                       if (isStarted) {
                         await Workmanager().cancelAll();
                       } else {
@@ -58,17 +57,21 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         if (isTestMode) {
                           _testModeSetup();
                         } else {
+                          await LocalStorage().resetShortRest();
+                          // final int helloAlarmID = 0;
+                          // await AndroidAlarmManager.periodic(const Duration(minutes: 1), helloAlarmID, printHello);
                           Workmanager().registerPeriodicTask(
                             "simpleTask",
                             "Title",
                             frequency: const Duration(minutes: 15),
+                            initialDelay: const Duration(minutes: 15),
                             existingWorkPolicy: ExistingWorkPolicy.keep,
                           );
                         }
                       }
                       isLoading = false;
                       isStarted = !isStarted;
-                      await sharedPref.setBool(value, isStarted);
+                      await LocalStorage().subscribeNotificationToggle(isStarted);
                       setState(() {});
                     },
                     child: Text(isStarted ? "Stop" : "Start"),
@@ -118,3 +121,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     super.dispose();
   }
 }
+
+
+
+
