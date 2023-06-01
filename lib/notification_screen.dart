@@ -1,7 +1,6 @@
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:eye_see_codes/local_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:workmanager/workmanager.dart';
 
 import 'notification_work_manager.dart';
 
@@ -17,6 +16,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
   bool isLoading = true;
 
   bool isTestMode = false;
+
+  int id=1;
 
   @override
   void initState() {
@@ -51,21 +52,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       isLoading = true;
                       setState(() {});
                       if (isStarted) {
-                        await Workmanager().cancelAll();
+                        await AndroidAlarmManager.cancel(id);
                       } else {
-                        await Workmanager().initialize(callbackDispatcher);
                         if (isTestMode) {
                           _testModeSetup();
                         } else {
                           await LocalStorage().resetShortRest();
                           // final int helloAlarmID = 0;
                           // await AndroidAlarmManager.periodic(const Duration(minutes: 1), helloAlarmID, printHello);
-                          Workmanager().registerPeriodicTask(
-                            "simpleTask",
-                            "Title",
-                            frequency: const Duration(minutes: 15),
-                            initialDelay: const Duration(minutes: 15),
-                            existingWorkPolicy: ExistingWorkPolicy.keep,
+                          AndroidAlarmManager.periodic(
+                            const Duration(minutes: 15),
+                            id,
+                              callbackDispatcher,
+
                           );
                         }
                       }
@@ -102,18 +101,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   void _testModeSetup() {
-    const totalDuration = Duration(minutes: 1);
-    const interval = Duration(seconds: 10);
-    for (Duration duration = Duration.zero;
-        duration.inMilliseconds <= totalDuration.inMilliseconds;
-        duration = Duration(
-            milliseconds: duration.inMilliseconds + interval.inMilliseconds)) {
-      Workmanager().registerOneOffTask(
-        "send_notification${duration.inMilliseconds}",
-        "simpleTask",
-        initialDelay: duration,
-      );
-    }
+    AndroidAlarmManager.periodic(
+      const Duration(seconds: 10),
+      id,
+      callbackDispatcher,
+    );
   }
 
   @override
